@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шпаргалка бариста — карточки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #241b16;
+    --bg-2: #2e2019;
+    --paper: #f4ecdd;
+    --paper-2: #ece1cc;
+    --ink: #241b16;
+    --copper: #c97c4e;
+    --sage: #8fa377;
+    --berry: #b5495b;
+    --gold: #d4a843;
+    --muted: #a89a89;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(201,124,78,0.10), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(143,163,119,0.08), transparent 45%),
+      var(--bg);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 28px 16px 60px;
+  }
+
+  .rule{
+    width:100%;
+    max-width:640px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 18px;
+  }
+  .rule .line{ flex:1; height:1px; background: rgba(244,236,221,0.18); }
+  .rule .mark{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:0.18em; color:var(--muted); text-transform:uppercase; }
+
+  header{
+    max-width:640px;
+    width:100%;
+    text-align:center;
+    margin-bottom: 8px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: clamp(28px, 6vw, 40px);
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  h1 em{
+    font-style: italic;
+    font-weight: 500;
+    color: var(--copper);
+  }
+  .subtitle{
+    font-family:'IBM Plex Mono';
+    font-size: 12.5px;
+    color: var(--muted);
+    letter-spacing:0.04em;
+  }
+
+  .chips{
+    max-width: 680px;
+    width:100%;
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding: 4px 2px 14px;
+    margin-bottom: 6px;
+    scrollbar-width: thin;
+  }
+  .chips::-webkit-scrollbar{ height:5px; }
+  .chips::-webkit-scrollbar-thumb{ background: rgba(244,236,221,0.2); border-radius:3px; }
+  .chip{
+    flex:none;
+    font-family:'IBM Plex Mono';
+    font-size: 12px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(244,236,221,0.22);
+    background: rgba(244,236,221,0.04);
+    color: var(--paper);
+    cursor:pointer;
+    white-space:nowrap;
+    transition: all .15s ease;
+  }
+  .chip:hover{ border-color: rgba(244,236,221,0.45); }
+  .chip.active{
+    background: var(--copper);
+    border-color: var(--copper);
+    color: #241b16;
+    font-weight:600;
+  }
+
+  .stage{
+    width:100%;
+    max-width: 420px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-top: 10px;
+  }
+
+  .progress-row{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'IBM Plex Mono';
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+  .progress-bar{
+    width:100%;
+    height: 3px;
+    background: rgba(244,236,221,0.12);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--copper), var(--gold));
+    border-radius:2px;
+    transition: width .25s ease;
+  }
+
+  .card-wrap{
+    width:100%;
+    aspect-ratio: 3 / 4;
+    perspective: 1400px;
+    cursor:pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card{
+    position:relative;
+    width:100%;
+    height:100%;
+    transition: transform .55s cubic-bezier(.2,.8,.2,1);
+    transform-style: preserve-3d;
+  }
+  .card.flipped{ transform: rotateY(180deg); }
+
+  .face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    border-radius: 10px;
+    padding: 26px 24px 20px;
+    display:flex;
+    flex-direction:column;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.35), 0 2px 0 rgba(0,0,0,0.2);
+  }
+
+  .face.front{
+    background: var(--paper);
+    color: var(--ink);
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(36,27,22,0.05) 28px);
+    justify-content:space-between;
+    clip-path: polygon(
+      0% 0%, 100% 0%, 100% 94%,
+      96% 96%, 92% 94%, 88% 96%, 84% 94%, 80% 96%, 76% 94%, 72% 96%, 68% 94%, 64% 96%,
+      60% 94%, 56% 96%, 52% 94%, 48% 96%, 44% 94%, 40% 96%, 36% 94%, 32% 96%, 28% 94%,
+      24% 96%, 20% 94%, 16% 96%, 12% 94%, 8% 96%, 4% 94%, 0% 96%
+    );
+  }
+
+  .face.back{
+    background: var(--bg-2);
+    color: var(--paper);
+    transform: rotateY(180deg);
+    justify-content:flex-start;
+    border: 1px solid rgba(244,236,221,0.1);
+  }
+
+  .cat-stamp{
+    align-self:flex-start;
+    font-family:'IBM Plex Mono';
+    font-size: 10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    border: 1.5px solid currentColor;
+    border-radius: 999px;
+    padding: 4px 10px;
+    opacity:0.75;
+    transform: rotate(-3deg);
+  }
+
+  .hole{
+    position:absolute;
+    top:16px; right:16px;
+    width:16px; height:16px;
+    border-radius:50%;
+    background: var(--bg);
+    box-shadow: inset 0 2px 3px rgba(0,0,0,0.4);
+  }
+
+  .drink-name{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: clamp(24px, 6vw, 32px);
+    line-height:1.12;
+    margin: 18px 0 0;
+  }
+
+  .front-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    font-family:'IBM Plex Mono';
+  }
+  .flip-hint{
+    font-size:11px;
+    color: rgba(36,27,22,0.45);
+    letter-spacing:0.06em;
+  }
+  .out-hint-front{
+    font-size: 11px;
+    color: rgba(36,27,22,0.55);
+  }
+
+  .back-label{
+    font-family:'IBM Plex Mono';
+    font-size: 10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .ingredients{
+    font-family:'IBM Plex Mono';
+    font-size: 14.5px;
+    line-height:1.9;
+    list-style:none;
+    padding:0;
+    margin:0;
+    flex:1;
+    overflow-y:auto;
+  }
+  .ingredients li{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    border-bottom: 1px dashed rgba(244,236,221,0.14);
+    padding: 5px 0;
+  }
+  .ingredients li span:first-child{ color: var(--paper); }
+  .ingredients li span:last-child{ color: var(--muted); white-space:nowrap; }
+
+  .output-row{
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(244,236,221,0.18);
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono';
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .output-row b{ color: var(--copper); font-size:13px; }
+
+  .controls{
+    display:flex;
+    gap: 10px;
+    margin-top: 22px;
+    width:100%;
+  }
+  .btn{
+    flex:1;
+    font-family:'Inter';
+    font-weight:600;
+    font-size: 13.5px;
+    padding: 12px 10px;
+    border-radius: 8px;
+    border: none;
+    cursor:pointer;
+    transition: transform .1s ease, filter .15s ease;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn-know{ background: var(--sage); color:#1c2216; }
+  .btn-again{ background: var(--berry); color:#fbeaea; }
+  .btn-know:hover, .btn-again:hover{ filter:brightness(1.08); }
+
+  .nav-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 18px;
+    margin-top: 16px;
+  }
+  .nav-btn{
+    background: none;
+    border: 1px solid rgba(244,236,221,0.25);
+    color: var(--paper);
+    width: 38px; height:38px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:16px;
+    display:flex; align-items:center; justify-content:center;
+    transition: all .15s ease;
+  }
+  .nav-btn:hover{ border-color: var(--copper); color: var(--copper); }
+  .shuffle-btn{
+    font-family:'IBM Plex Mono';
+    font-size: 11.5px;
+    letter-spacing:0.06em;
+    color: var(--muted);
+    background:none;
+    border:none;
+    cursor:pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .shuffle-btn:hover{ color: var(--paper); }
+
+  .done-panel{
+    max-width: 420px;
+    width:100%;
+    text-align:center;
+    padding: 40px 20px;
+  }
+  .done-panel .drink-name{ font-size: 26px; }
+  .done-stats{
+    font-family:'IBM Plex Mono';
+    font-size: 13px;
+    color: var(--muted);
+    margin: 16px 0 22px;
+    line-height:1.8;
+  }
+  .done-stats b{ color: var(--sage); }
+  .done-stats .again-count{ color: var(--berry); }
+
+  footer{
+    margin-top: 40px;
+    font-family:'IBM Plex Mono';
+    font-size: 10.5px;
+    color: rgba(244,236,221,0.3);
+    text-align:center;
+    max-width:420px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <h1>Шпаргалка <em>бариста</em></h1>
+    <div class="subtitle">СОСТАВ НАПИТКОВ · КАРТОЧКИ ДЛЯ ЗАУЧИВАНИЯ</div>
+  </header>
+
+  <div class="rule"><div class="line"></div><div class="mark">выбери раздел</div><div class="line"></div></div>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="stage" id="stage"></div>
+
+  <footer>Нажми на карточку, чтобы перевернуть · пробел — тоже переворот · ← → — соседняя карточка<br>По технологической карте бара (Нургалиев Е.А)</footer>
+
+<script>
+const DATA = [
+{cat:"Кофе", icon:"☕", items:[
+  {n:"Эспрессо", ing:[["Кофе","20 г"]], out:"30–40 г"},
+  {n:"Американо 300 мл", ing:[["Кофе","20 г"],["Вода","240 мл"]], out:"300 мл"},
+  {n:"Американо 400 мл", ing:[["Кофе","30 г"],["Вода","340 мл"]], out:"400 мл"},
+  {n:"Капучино 300 мл", ing:[["Кофе","20 г"],["Молоко","240 г"]], out:"300 мл"},
+  {n:"Капучино 400 мл", ing:[["Кофе","30 г"],["Молоко","340 мл"]], out:"400 мл"},
+  {n:"Флэт уайт", ing:[["Кофе","20 г"],["Молоко","150 г"]], out:"180 мл"},
+  {n:"Латте 300 мл", ing:[["Кофе","20 г"],["Молоко","270 г"]], out:"300 мл"},
+  {n:"Латте 400 мл", ing:[["Кофе","20 г"],["Молоко","370 г"]], out:"400 мл"},
+  {n:"Раф яблочный пирог", ing:[["Кофе","20 г"],["Молоко","120 г"],["Сливки 10%","120 г"],["Сироп яблочный пирог","20 г"],["Корица","1 г"]], out:"300 мл"},
+]},
+{cat:"Фильтр-кофе", icon:"🫗", items:[
+  {n:"Воронка V60", ing:[["Кофе","20 г"]], out:"200–280 г"},
+  {n:"Батч брю", ing:[["П/ф батч брю","250 г"]], out:"250 г"},
+  {n:"Ягодный фильтр", ing:[["Батч брю","250 г"],["Сироп малина","40 г"],["Лёд","150 г"],["Съедобный цветок","1 шт"]], out:"400 мл"},
+  {n:"Вишнёвый фильтр", ing:[["Батч брю","250 г"],["Сироп вишня","40 г"],["Лёд","150 г"],["Съедобный цветок","1 шт"]], out:"400 мл"},
+  {n:"Персиковый фильтр", ing:[["Батч брю","250 г"],["Концентрат персика","40 г"],["Лёд","150 г"],["Съедобный цветок","1 шт"]], out:"400 мл"},
+]},
+{cat:"Фраппе / авторский кофе", icon:"🧊", items:[
+  {n:"Эспрессо тоник классика", ing:[["Кофе","20 г"],["Лёд","100 г"],["Швепс","1 шт"],["Лайм","20 г"]], out:"400 мл"},
+  {n:"Бамбл кофе", ing:[["Двойной эспрессо","—"],["Фреш апельсин","200 г"],["Сироп карамель","20 г"],["Лёд","150 г"]], out:"400 мл"},
+  {n:"Фраппе арахис-солёная карамель", ing:[["Кофе","20 г"],["Молоко","250 г"],["Ванильный порошок","20 г"],["Лёд","150 г"],["Арахисовая паста","10 г"],["Сироп солёная карамель","20 г"],["Взбитые сливки","25 г"],["Топпинг карамель","10 г"],["Кокосовый слайс","2 г"]], out:"470 г"},
+  {n:"Toffee", ing:[["Кофе","20 г"],["Молоко","200 г"],["Ванильный порошок","10 г"],["Лёд","150 г"],["Сироп карамель","20 г"],["П/ф крем","40 г"],["Топпинг шоколад","10 г"],["Посыпка шоколад","5 г"]], out:"470 г"},
+  {n:"Фраппе банан", ing:[["Кофе","20 г"],["Молоко","250 г"],["Ванильный порошок","20 г"],["Лёд","150 г"],["Концентрат банан","30 г"],["Взбитые сливки","25 г"],["Шоколадный топпинг","20 г"],["Кокосовый слайс","2 г"]], out:"470 г"},
+]},
+{cat:"Ходжича / матча", icon:"🍵", items:[
+  {n:"Ходжича латте", ing:[["Ходжича","3 г"],["Молоко","240 г"]], out:"300 мл"},
+  {n:"Ходжича клоуд", ing:[["Ходжича","3 г"],["Кокосовая вода","200 г"],["Кокосовый сироп","20 г"],["П/ф крем","50 г"],["Лёд","150 г"],["Кунжут","1 г"]], out:"400 мл"},
+  {n:"Матча латте", ing:[["Матча","2 г"],["Молоко","240 г"]], out:"300 мл"},
+  {n:"Матча латте манго", ing:[["Матча","3 г"],["Пюре манго","40 г"],["Сироп манго","30 г"],["Лёд","150 г"],["Молоко","180 г"],["Съедобный цветок","1 шт"]], out:"470 мл"},
+  {n:"Матча фраппучино", ing:[["Матча","3 г"],["Ванильный порошок","20 г"],["Сироп ваниль","20 г"],["Молоко","180 г"],["Лёд","100 г"],["П/ф сливочный крем","40 г"],["Посыпка матча","0,5 г"]], out:"470 мл"},
+  {n:"Матча с дыней", ing:[["Матча","3 г"],["Пюре дыня","40 г"],["Лёд","150 г"],["Молоко","200 г"],["П/ф сливочный крем","40 г"],["Посыпка матча","0,5 г"]], out:"470 мл"},
+  {n:"Матча Рафаэлло", ing:[["Матча","2 г"],["Кокосовый сироп","20 г"],["Кокосовое молоко","240 г"],["Лёд","150 г"],["П/ф крем","40 г"],["Кокосовая стружка","2 г"]], out:"470 мл"},
+  {n:"Бамбл матча", ing:[["Матча","3 г"],["Фреш апельсин","200 г"],["Сироп ваниль","20 г"],["Лёд","150 г"]], out:"400 мл"},
+  {n:"Матча с клубникой", ing:[["Матча","3 г"],["Сироп клубника","40 г"],["Лёд","150 г"],["Молоко","240 г"],["Съедобный цветок","1 шт"]], out:"470 мл"},
+  {n:"Матча лимонный тарт", ing:[["Матча","2 г"],["Сливки 20%","50 г"],["Молоко","220 г"],["Лёд","150 г"],["Сироп ваниль","10 г"],["Порошок лимонный тарт","20 г"]], out:"470 мл"},
+]},
+{cat:"Чай классический", icon:"🫖", items:[
+  {n:"Английский завтрак 400 мл", ing:[["Чай","3 г"]], out:"400 мл"},
+  {n:"Английский завтрак 800 мл", ing:[["Чай","5 г"]], out:"800 мл"},
+  {n:"Сенча 400 мл", ing:[["Чай","3 г"]], out:"400 мл"},
+  {n:"Сенча 800 мл", ing:[["Чай","5 г"]], out:"800 мл"},
+]},
+{cat:"Авторский чай", icon:"🍑", items:[
+  {n:"Гречишный чай манго-ананас 800 мл", ing:[["С/манго","40 г"],["Сироп манго","35 г"],["Сироп ананас","35 г"],["Апельсин","30 г"],["Гречишный чай","4 г"],["Розмарин","4 г"],["Корица","10 г"]], out:"800 мл"},
+  {n:"Гречишный чай манго-ананас 400 мл", ing:[["С/манго","20 г"],["Сироп манго","20 г"],["Сироп ананас","20 г"],["Апельсин","20 г"],["Гречишный чай","2 г"],["Розмарин","2 г"],["Корица","5 г"]], out:"400 мл"},
+  {n:"Клубника-лайм 800 мл", ing:[["Сироп клубника","35 г"],["Сироп мохито","35 г"],["П/ф клубника","80 г"],["Розмарин","4 г"],["Лайм","25 г"],["Чай англ. завтрак (пакет)","5 г"]], out:"800 мл"},
+  {n:"Клубника-лайм 400 мл", ing:[["Сироп клубника","20 г"],["Сироп мохито","20 г"],["П/ф клубника","40 г"],["Розмарин","2 г"],["Лайм","15 г"],["Чай англ. завтрак (пакет)","3 г"]], out:"400 мл"},
+  {n:"Чай каркаде с розой и персиком 800 мл", ing:[["Каркаде","5 г"],["Вода","700 мл"],["Концентрат персика","50 г"],["Сироп розы","30 г"],["Съедобный цветок","1 шт"]], out:"800 мл"},
+  {n:"Чай каркаде с розой и персиком 400 мл", ing:[["Каркаде","3 г"],["Вода","400 мл"],["Концентрат персика","20 г"],["Сироп розы","20 г"],["Съедобный цветок","1 шт"]], out:"400 мл"},
+  {n:"Жасминовый чай с алоэ и персиком 800 мл", ing:[["Чай жасмин","5 г"],["Вода","700 мл"],["Концентрат персика","30 г"],["Концентрат алоэ","30 г"],["Сахарный сироп","40 г"],["Съедобный цветок","1 шт"]], out:"800 мл"},
+  {n:"Жасминовый чай с алоэ и персиком 400 мл", ing:[["Чай жасмин","3 г"],["Вода","400 мл"],["Концентрат персика","15 г"],["Концентрат алоэ","15 г"],["Сахарный сироп","20 г"],["Съедобный цветок","1 шт"]], out:"400 мл"},
+]},
+{cat:"Лимонады", icon:"🍋", items:[
+  {n:"Цитрусовый микс 470 мл", ing:[["Апельсин","10 г"],["Лимон","10 г"],["Лайм","10 г"],["Фреш апельсин","50 г"],["Сироп мохито","40 г"],["П/ф сахар","20 г"],["Розмарин","2 г"],["Сарыагаш","300 г"]], out:"470 мл"},
+  {n:"Цитрусовый микс 1000 мл", ing:[["Апельсин","20 г"],["Лимон","20 г"],["Лайм","20 г"],["Фреш апельсин","100 г"],["Сироп мохито","100 г"],["П/ф сахар","50 г"],["Розмарин","4 г"],["Сарыагаш","600 г"]], out:"1000 мл"},
+  {n:"Ананас-щавель 470 мл", ing:[["Сироп ананас","30 г"],["П/ф сахар","30 г"],["П/ф щавель","100 г"],["П/ф кордиал","2 г"],["Лимон","10 г"],["Розмарин","2 г"],["Сарыагаш","300 мл"]], out:"470 мл"},
+  {n:"Ананас-щавель 1000 мл", ing:[["Сироп ананас","70 г"],["П/ф сахар","80 г"],["П/ф щавель","200 г"],["П/ф кордиал","4 г"],["Лимон","20 г"],["Розмарин","4 г"],["Сарыагаш","600 мл"]], out:"1000 мл"},
+  {n:"Ягодный 470 мл", ing:[["Сироп малина","20 г"],["Сироп клубника","20 г"],["П/ф сахар","20 г"],["П/ф клубника","40 г"],["Розмарин","2 г"],["Лимон","20 г"],["Клубника с/м","20 г"],["П/ф чёрный чай","300 г"]], out:"470 мл"},
+  {n:"Ягодный 1000 мл", ing:[["Сироп малина","50 г"],["Сироп клубника","50 г"],["П/ф сахар","50 г"],["П/ф клубника","80 г"],["Розмарин","4 г"],["Клубника с/м","30 г"],["Лимон","30 г"],["П/ф чёрный чай","600 г"]], out:"1000 мл"},
+]},
+{cat:"Газировка / айс-ти", icon:"🥤", items:[
+  {n:"Алоэ-юдзу", ing:[["Пюре юдзу","10 г"],["П/ф кордиал","5 г"],["Алоэ","40 г"],["П/ф сахар","30 г"],["П/ф анчан","40 г"],["Газировка","200 г"],["Лёд","150 г"],["Съедобный цветок","1 шт"]], out:"470 мл"},
+  {n:"Персик-грейпфрут", ing:[["Концентрат персик","30 г"],["Концентрат грейпфрут","30 г"],["Газировка","200 г"],["Лёд","150 г"],["П/ф каркаде","40 г"],["Съедобный цветок","1 шт"]], out:"470 мл"},
+  {n:"Ананас-драгонфрут", ing:[["Сироп ананас","45/90 г"],["С/м питахайя","30/60 г"],["Газировка","200/400 г"],["Лёд","150/300 г"],["Слайс маракуйи","10/20 г"]], out:"470/1000 мл"},
+  {n:"Вишня-юдзу", ing:[["Пюре юдзу","10 г"],["Кордиал","5 г"],["Лёд","150 г"],["Сахарный сироп","50 г"],["П/ф каркаде","50 г"],["Газировка","150 г"],["Пюре вишня","30 г"]], out:"400 мл"},
+  {n:"Дюшес", ing:[["Концентрат груша","40 г"],["Сироп груша","30 г"],["П/ф семена чиа","10 г"],["Газировка","200 г"],["Лёд","150 г"],["Слайс груши","20 г"],["Съедобный цветок","1 шт"]], out:"470 мл"},
+  {n:"Ананас-грейпфрут", ing:[["Сироп ананас","35 г"],["Концентрат грейпфрут","30 г"],["П/ф сахарный сироп","5 г"],["Кокосовые дольки","40 г"],["Грейпфрут","40 г"],["Жасмин п/ф","150 г"],["П/ф кордиал","3 г"]], out:"—"},
+  {n:"Ice Tea вишня-грейпфрут 470 мл", ing:[["Сироп вишня","30 г"],["Концентрат грейпфрута","30 г"],["Лёд","150 г"],["П/ф чёрный чай","200 г"],["Слайс грейпфрута","50 г"]], out:"470 мл"},
+  {n:"Ice Tea вишня-грейпфрут 1000 мл", ing:[["Сироп вишня","70 г"],["Концентрат грейпфрута","70 г"],["Лёд","450 г"],["П/ф чёрный чай","400 г"],["Слайс грейпфрута","70 г"]], out:"1000 мл"},
+  {n:"Киви-яблоко", ing:[["Сироп яблоко","30 г"],["Концентрат киви","30 г"],["Киви","40 г"],["Лимон","20 г"],["Джусс болл яблоко","50 г"],["Газировка","200 г"],["Лёд","150 г"]], out:"470 мл"},
+]},
+{cat:"Бабл ти", icon:"🧋", items:[
+  {n:"Bubble Tea Oreo", ing:[["Шоколадный топпинг","20 г"],["Лёд","100 г"],["Тапиока","50 г"],["Ванильный порошок","10 г"],["Молоко","250 г"],["Сироп ваниль","20 г"],["П/ф орео","25 г"]], out:"470 мл"},
+  {n:"Thai Tea", ing:[["П/ф тайский чёрный чай","260 г"],["Сливки 20%","20 г"],["П/ф крем","50 г"],["П/ф тапиока","50 г"],["Карамельный сироп","30 г"],["Кокосовый слайс","2 г"]], out:"470 мл"},
+  {n:"Rainbow", ing:[["П/ф тапиока","50 г"],["Сироп малина","20 г"],["П/ф сахар","20 г"],["П/ф малина","40 г"],["Молоко 3.2","100 г"],["П/ф чай анчан","100 г"],["П/ф крем","50 г"],["Ягодная посыпка","2 г"]], out:"470 мл"},
+]},
+{cat:"Смузи", icon:"🥤", items:[
+  {n:"Green Mix", ing:[["П/ф яблоко","100 г"],["П/ф банан","100 г"],["П/ф киви","40 г"],["Шпинат","25 г"],["Сельдерей","50 г"],["Вода","270 г"],["Мёд","20 г"],["Ягодная посыпка","2 г"]], out:"470 мл"},
+  {n:"Super Mix", ing:[["Клубника с/м","100 г"],["П/ф банан","100 г"],["Миндальное молоко","250 г"],["Семена чиа на кокосе п/ф","20 г"],["Мёд","20 г"],["Миндальный слайс","5 г"],["Ягодная посыпка","2 г"]], out:"470 мл"},
+  {n:"Tropical Cumble", ing:[["Клубника с/м","80 г"],["П/ф банан","80 г"],["Сок ананас","250 г"],["Ягодная посыпка","2 г"]], out:"470 мл"},
+]},
+{cat:"Десерты", icon:"🍦", items:[
+  {n:"Мороженое", ing:[["Мороженое","150 г"],["Вафельный рожок","1 шт"],["Золотая посыпка","2 г"]], out:"150 г"},
+  {n:"Горячий шоколад с маршмеллоу", ing:[["Порошок шоколад","30 г"],["Сироп шоколад","10 г"],["Молоко","200 г"],["Маршмеллоу","20 г"]], out:"—"},
+  {n:"Какао с маршмеллоу", ing:[["Порошок шоколад","20 г"],["Сироп шоколад","20 г"],["Молоко","200 г"],["Маршмеллоу","20 г"]], out:"—"},
+]},
+{cat:"Vanilla коктейли", icon:"🍨", items:[
+  {n:"Vanilla клубничный", ing:[["Ванильный порошок","40 г"],["Молоко","250 г"],["Сироп клубника","20 г"],["Взбитые сливки","25 г"],["Ягодная посыпка","2 г"],["Золотая посыпка","2 г"]], out:"470 мл"},
+  {n:"Vanilla шоколадный", ing:[["Ванильный порошок","40 г"],["Молоко","230 г"],["Сироп шоколад","20 г"],["Топпинг шоколад","20 г"],["Взбитые сливки","25 г"],["Посыпка шоколад","2 г"],["Золотая посыпка","3 г"]], out:"470 мл"},
+  {n:"Vanilla ванильный", ing:[["Ванильный порошок","40 г"],["Молоко","250 г"],["Сироп ваниль","10 г"],["Взбитые сливки","25 г"],["Золотая посыпка","2 г"],["Посыпка печенье","2 г"]], out:"470 мл"},
+]},
+{cat:"Фреши", icon:"🍊", items:[
+  {n:"Фреш апельсин", ing:[["П/ф апельсин","600 г"],["Декор апельсин","5 г"]], out:"300 мл"},
+  {n:"Сельдерей, яблоко, лимон", ing:[["Сельдерей","150 г"],["Яблоко","300 г"],["Лимон","100 г"]], out:"300 мл"},
+  {n:"Яблоко", ing:[["Яблоко","450 г"]], out:"300 мл"},
+]},
+{cat:"Йогурт / убе", icon:"🫐", items:[
+  {n:"Черничный йогурт", ing:[["Кефир","150 г"],["Черника с/м","40 г"],["Банан п/ф","100 г"],["Сироп черника","30 г"],["Семена чиа п/ф на молоке","25 г"],["Крем п/ф","60 г"],["Кокосовый слайс","3 г"],["Посыпка малина","1 г"]], out:"—"},
+  {n:"Манговый йогурт", ing:[["Кефир","150 г"],["Пюре манго с/м","40 г"],["Банан п/ф","100 г"],["Сироп манго","30 г"],["Семена чиа п/ф на молоке","25 г"],["Крем п/ф","60 г"],["Кокосовый слайс","3 г"],["Посыпка малина","1 г"]], out:"—"},
+  {n:"Убе черника-банан", ing:[["Порошок убе","3 г"],["П/ф черника","30 г"],["Сироп черника","30 г"],["Молоко","200 г"],["Лёд","150 г"],["Сливки 20%","50 г"],["Концентрат банан","20 г"],["Съедобные цветы","1 шт"]], out:"470 мл"},
+]},
+];
+
+// flat list with category ref
+let ALL = [];
+DATA.forEach(cat => cat.items.forEach(item => ALL.push({...item, cat: cat.cat, icon: cat.icon})));
+
+let filterCat = "Все";
+let deck = [];
+let idx = 0;
+let flipped = false;
+let known = 0, again = 0;
+let seen = new Set();
+
+function buildDeck(){
+  deck = (filterCat === "Все" ? ALL : ALL.filter(c => c.cat === filterCat)).slice();
+  idx = 0; flipped = false; known = 0; again = 0; seen = new Set();
+  render();
+}
+
+function shuffleDeck(){
+  for(let i = deck.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  idx = 0; flipped = false;
+  render();
+}
+
+function renderChips(){
+  const chips = document.getElementById('chips');
+  const cats = ["Все", ...DATA.map(c => c.cat)];
+  chips.innerHTML = cats.map(c => {
+    const icon = c === "Все" ? "◆" : DATA.find(d => d.cat === c).icon;
+    return `<button class="chip ${c === filterCat ? 'active' : ''}" data-cat="${c}">${icon} ${c}</button>`;
+  }).join('');
+  chips.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterCat = btn.dataset.cat;
+      buildDeck();
+      renderChips();
+    });
+  });
+}
+
+function render(){
+  const stage = document.getElementById('stage');
+  if(idx >= deck.length){
+    stage.innerHTML = `
+      <div class="done-panel">
+        <div class="cat-stamp" style="color:var(--gold)">Раздел пройден</div>
+        <div class="drink-name">Готово ✓</div>
+        <div class="done-stats">
+          Знаю уверенно: <b>${known}</b><br>
+          Нужно повторить: <span class="again-count">${again}</span><br>
+          Всего карточек: ${deck.length}
+        </div>
+        <button class="btn btn-know" style="width:100%" onclick="shuffleDeck()">Пройти ещё раз</button>
+      </div>
+    `;
+    return;
+  }
+  const card = deck[idx];
+  stage.innerHTML = `
+    <div class="progress-row">
+      <span>${card.icon} ${card.cat}</span>
+      <span>${idx + 1} / ${deck.length}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${(idx/deck.length)*100}%"></div></div>
+
+    <div class="card-wrap" id="cardWrap">
+      <div class="card ${flipped ? 'flipped' : ''}" id="cardEl">
+        <div class="face front">
+          <div class="hole"></div>
+          <div class="cat-stamp" style="color:var(--copper)">${card.icon} ${card.cat}</div>
+          <div class="drink-name">${card.n}</div>
+          <div class="front-footer">
+            <span class="flip-hint">нажми, чтобы открыть состав</span>
+          </div>
+        </div>
+        <div class="face back">
+          <div class="back-label">Состав</div>
+          <ul class="ingredients">
+            ${card.ing.map(([name, amt]) => `<li><span>${name}</span><span>${amt}</span></li>`).join('')}
+          </ul>
+          <div class="output-row"><span>Выход</span><b>${card.out}</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-again" onclick="mark(false)">Повторить</button>
+      <button class="btn btn-know" onclick="mark(true)">Знаю</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-btn" onclick="go(-1)">←</button>
+      <button class="shuffle-btn" onclick="shuffleDeck()">перемешать</button>
+      <button class="nav-btn" onclick="go(1)">→</button>
+    </div>
+  `;
+  document.getElementById('cardWrap').addEventListener('click', toggleFlip);
+}
+
+function toggleFlip(){
+  flipped = !flipped;
+  document.getElementById('cardEl').classList.toggle('flipped', flipped);
+}
+
+function mark(isKnown){
+  if(isKnown) known++; else again++;
+  idx++; flipped = false;
+  render();
+}
+
+function go(dir){
+  idx = Math.max(0, Math.min(deck.length, idx + dir));
+  flipped = false;
+  render();
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.code === 'Space'){ e.preventDefault(); toggleFlip(); }
+  if(e.code === 'ArrowRight'){ go(1); }
+  if(e.code === 'ArrowLeft'){ go(-1); }
+});
+
+renderChips();
+buildDeck();
+</script>
+</body>
+</html>
